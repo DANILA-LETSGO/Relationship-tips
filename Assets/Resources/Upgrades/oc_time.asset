@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5400603c6bbf7049afb7db7065939ac, type: 3}
+  m_Name: oc_time
+  m_EditorClassIdentifier: 
+  id: oc_time
+  displayName: "\u041E\u0432\u0435\u0440\u043A\u043B\u043E\u043A (\u0432\u0440\u0435\u043C\u044F)"
+  description: "+1\u0441"
+  type: 11
+  baseCost: 2500
+  costScaling: 1.25
+  maxLevel: 30
+  effectPerLevel: 1
+  isPercent: 0
