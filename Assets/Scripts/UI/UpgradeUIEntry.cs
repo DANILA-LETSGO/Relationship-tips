@@ -144,7 +144,9 @@ namespace Clicker.UI
 
             if (buyButton != null)
             {
-                buyButton.interactable = !isMax && canAfford;
+                // Keep button clickable so we can show contextual feedback for hidden upgrades.
+                // Actual purchase availability is validated inside Buy().
+                buyButton.interactable = !isMax;
             }
         }
 
@@ -159,6 +161,13 @@ namespace Clicker.UI
         private void Buy()
         {
             if (_mgr == null || upgrade == null) return;
+
+            if (_isHidden)
+            {
+                string reason = $"Информация об этом улучшении пока скрыта. Накопите {Math.Ceiling(_nextCost):0} монет, чтобы открыть название и описание.";
+                LockedUpgradeHintPopup.Show(reason, 2.2f);
+                return;
+            }
 
             bool success = _mgr.TryBuy(upgrade);
             // If success is true, we animate. If not, we do nothing (you might still want feedback).
