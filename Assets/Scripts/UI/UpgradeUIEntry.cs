@@ -170,15 +170,6 @@ namespace Clicker.UI
             }
 
             bool success = _mgr.TryBuy(upgrade);
-            // If success is true, we animate. If not, we do nothing (you might still want feedback).
-            if (success)
-            {
-                string reason = $"Информация об этом улучшении пока скрыта. Накопите {Math.Ceiling(_nextCost):0} монет, чтобы открыть название и описание.";
-                LockedUpgradeHintPopup.Show(reason, 2.2f);
-                return;
-            }
-
-            bool success = _mgr.TryBuy(upgrade);
             if (!success)
             {
                 double current = GameManager.I != null ? GameManager.I.softCurrency.Value : 0.0;
