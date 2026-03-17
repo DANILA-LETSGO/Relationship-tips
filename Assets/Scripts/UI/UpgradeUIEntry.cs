@@ -45,6 +45,8 @@ namespace Clicker.UI
         private Coroutine _animCoroutine;
         private GameObject _currentClone;
         private CanvasGroup _originalCanvasGroup;
+        private bool _isHidden;
+        private double _nextCost;
 
         public void Bind(Upgrade upg, UpgradeManager mgr)
         {
@@ -122,8 +124,10 @@ namespace Clicker.UI
             bool canAfford = (GameManager.I != null) && (GameManager.I.softCurrency.Value + 1e-9 >= upgradeCost);
             bool alwaysReveal = (idx >= 0 && idx < 2);
             bool reveal = alwaysReveal || lv > 0 || canAfford;
+            _isHidden = !reveal && lv == 0;
+            _nextCost = upgradeCost;
 
-            if (!reveal && lv == 0)
+            if (_isHidden)
             {
                 if (title != null) title.text = "??";
                 if (desc != null) desc.text = "??";
@@ -139,7 +143,9 @@ namespace Clicker.UI
 
             if (buyButton != null)
             {
-                buyButton.interactable = !isMax && canAfford;
+                // Keep button clickable so we can show contextual feedback for hidden upgrades.
+                // Actual purchase availability is validated inside Buy().
+                buyButton.interactable = !isMax;
             }
         }
 
@@ -147,17 +153,30 @@ namespace Clicker.UI
         {
             if (_mgr == null || upgrade == null) return;
 
-            bool success = _mgr.TryBuy(upgrade);
-            // If success is true, we animate. If not, we do nothing (you might still want feedback).
-            if (success)
+            if (_isHidden)
             {
-                // Interrupt current animation if running and clean up clone/restore original
-                InterruptAnimationIfRunning();
-
-                // play animation on overlay clone (parented to root Canvas)
-                StartPurchaseAnimationOverlay();
-                Refresh();
+                string reason = $"Информация об этом улучшении пока скрыта. Накопите {Math.Ceiling(_nextCost):0} монет, чтобы открыть название и описание.";
+                LockedUpgradeHintPopup.Show(reason, 2.2f);
+                return;
             }
+
+            bool success = _mgr.TryBuy(upgrade);
+            if (!success)
+            {
+                double current = GameManager.I != null ? GameManager.I.softCurrency.Value : 0.0;
+                double required = _mgr.GetCost(upgrade);
+                double missing = Math.Max(0.0, required - current);
+                LockedUpgradeHintPopup.Show($"Недостаточно монет. Нужно ещё {Math.Ceiling(missing):0}.", 1.8f);
+                return;
+            }
+
+            // If success is true, we animate. If not, we do nothing (you might still want feedback).
+            // Interrupt current animation if running and clean up clone/restore original
+            InterruptAnimationIfRunning();
+
+            // play animation on overlay clone (parented to root Canvas)
+            StartPurchaseAnimationOverlay();
+            Refresh();
         }
 
         // Interrupt running animation: stop coroutine, destroy clone, restore original
