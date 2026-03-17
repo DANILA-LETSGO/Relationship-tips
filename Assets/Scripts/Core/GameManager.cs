@@ -91,7 +91,8 @@ namespace Clicker.Core
                 double perSec = upgradeManager.CurrentStats.autoIncomePerSecond;
                 double offlineMult = 1.0 + upgradeManager.CurrentStats.offlineEarningsBonus;
                 // apply global offline earnings multiplier (exposed in inspector)
-                double earned = perSec * dt * offlineMult * prestigeMultiplier * offlineEarningsMultiplier;
+                // Do not apply prestige/global multipliers here: AddCurrency() applies them once.
+                double earned = perSec * dt * offlineMult * offlineEarningsMultiplier;
                 AddCurrency(earned); // this will increase totalEarned and currency
             }
         }
