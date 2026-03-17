@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Clicker.Upgrades;
 using Clicker.Core;
 using System;
@@ -17,7 +18,7 @@ namespace Clicker.UI
     /// Fix v5: ensure the clone does NOT block pointer events (so original button remains clickable)
     /// and keep original canvas group blocksRaycasts = true so it can receive clicks while hidden.
     /// </summary>
-    public class UpgradeUIEntry : MonoBehaviour
+    public class UpgradeUIEntry : MonoBehaviour, IPointerClickHandler
     {
         [Header("UI Elements")]
         public Text title;
@@ -149,6 +150,14 @@ namespace Clicker.UI
             }
         }
 
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (!_isHidden || upgrade == null) return;
+
+            string reason = $"Информация об этом улучшении пока скрыта. Накопите {Math.Ceiling(_nextCost):0} монет, чтобы открыть название и описание.";
+            LockedUpgradeHintPopup.Show(reason, 2.2f);
+        }
+
         private void Buy()
         {
             if (_mgr == null || upgrade == null) return;
@@ -160,7 +169,17 @@ namespace Clicker.UI
                 return;
             }
 
-            if (!_mgr.TryBuy(upgrade))
+            bool success = _mgr.TryBuy(upgrade);
+            // If success is true, we animate. If not, we do nothing (you might still want feedback).
+            if (success)
+            {
+                string reason = $"Информация об этом улучшении пока скрыта. Накопите {Math.Ceiling(_nextCost):0} монет, чтобы открыть название и описание.";
+                LockedUpgradeHintPopup.Show(reason, 2.2f);
+                return;
+            }
+
+            bool success = _mgr.TryBuy(upgrade);
+            if (!success)
             {
                 double current = GameManager.I != null ? GameManager.I.softCurrency.Value : 0.0;
                 double required = _mgr.GetCost(upgrade);
